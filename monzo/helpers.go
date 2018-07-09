@@ -1,7 +1,7 @@
 package monzo
 
 import (
-	"github.com/gurparit/callisto/monzo/model"
+	"github.com/gurparit/go-monzo/monzo/model"
 	"github.com/gurparit/callisto/sqlio"
 )
 

@@ -11,8 +11,8 @@ import (
 
 	"strings"
 
-	"github.com/gurparit/callisto/monzo/model"
-	"github.com/gurparit/callisto/sqlio"
+	"github.com/gurparit/go-monzo/monzo/model"
+	"github.com/gurparit/go-common/sqlio"
 	"github.com/gurparit/go-common/httpc"
 	"github.com/gurparit/go-common/logio"
 	"github.com/gurparit/go-common/uuid"
