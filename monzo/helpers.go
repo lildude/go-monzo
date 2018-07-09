@@ -2,7 +2,7 @@ package monzo
 
 import (
 	"github.com/gurparit/go-monzo/monzo/model"
-	"github.com/gurparit/callisto/sqlio"
+	"github.com/gurparit/go-common/sqlio"
 )
 
 func GetUser(userID string) (model.User, error) {
