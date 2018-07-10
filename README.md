@@ -2,4 +2,4 @@
 Golang Monzo Library
 
 # purpose
-go get github.com/gurparit/go-monzo
+> go get github.com/gurparit/go-monzo
