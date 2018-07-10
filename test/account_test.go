@@ -62,7 +62,7 @@ func TestAccountBalanceNew(t *testing.T) {
 
 	monzo.SetURL(monzo.BalanceURL, testHttp.URL)
 
-	testBalance, err := monzo.Balance("Bearer", "x-access-token", "x-account-id")
+	testBalance, err := monzo.New("Bearer", "x-access-token").Balance("x-account-id")
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -119,7 +119,7 @@ func TestAccountBalanceUpdate(t *testing.T) {
 
 	monzo.SetURL(monzo.BalanceURL, testHttp.URL)
 
-	testBalance, err := monzo.Balance("Bearer", "x-access-token", "x-account-id")
+	testBalance, err := monzo.New("Bearer", "x-access-token").Balance("x-account-id")
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -197,7 +197,7 @@ func TestAccountPots(t *testing.T) {
 
 	monzo.SetURL(monzo.PotsURL, testHttp.URL)
 
-	pots, err := monzo.Pots("Bearer", "x-access-token")
+	pots, err := monzo.New("Bearer", "x-access-token").Pots()
 
 	IsEqual(t, "error", nil, err)
 

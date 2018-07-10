@@ -69,7 +69,7 @@ func TestPotWithdrawSuccess(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	pot, err := monzo.Withdraw("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	pot, err := monzo.New("Bearer", "x-access-token").Withdraw( expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -137,7 +137,7 @@ func TestPotDepositSuccess(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	pot, err := monzo.Deposit("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	pot, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -206,7 +206,7 @@ func TestPotWithdrawDeletedFail(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	_, err := monzo.Withdraw("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot access deleted pots") {
 		t.Fail()
 	}
@@ -267,7 +267,7 @@ func TestPotDepositDeletedFail(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	_, err := monzo.Deposit("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot access deleted pots") {
 		t.Fail()
 	}
@@ -328,7 +328,7 @@ func TestPotWithdrawInsufficientFundsFail(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	_, err := monzo.Withdraw("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot withdraw amount, not enough money in pot") {
 		t.Fail()
 	}
@@ -389,7 +389,7 @@ func TestPotDepositInsufficientFundsFail(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	_, err := monzo.Deposit("Bearer", "x-access-token", expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "{\"code\":\"bad_request.insufficient_funds\",\"message\":\"You can't deposit more than your current account balance\"}\n") {
 		t.Fail()
 	}

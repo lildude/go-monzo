@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/gurparit/go-monzo/monzo/model"
-	"github.com/gurparit/go-common/sqlio"
 	"github.com/gurparit/go-common/httpc"
 	"github.com/gurparit/go-common/logio"
 	"github.com/gurparit/go-common/uuid"
@@ -60,6 +59,11 @@ var urlMap = map[string]string{
 	FeedItemCreateURL: "https://api.monzo.com/feed",
 }
 
+type Monzo struct {
+	tokenType string
+	accessToken string
+}
+
 func GetURL(urlname string, params ...interface{}) string {
 	baseURL := urlMap[urlname]
 	if strings.Contains(baseURL, "%s") {
@@ -73,26 +77,11 @@ func SetURL(urlname string, newURL string) {
 	urlMap[urlname] = newURL
 }
 
-func WhoAmI(tokenType string, accessToken string) (model.WhoAmI, error) {
-	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
-	headers.FormURLEncoded()
-
-	targetURL := GetURL(WhoAmIURL)
-
-	request := httpc.HTTP{
-		TargetURL: targetURL,
-		Method:    http.MethodPut,
-		Headers:   headers,
-		Form:      nil,
+func New(tokenType string, accessToken string) Monzo {
+	return Monzo{
+		tokenType: tokenType,
+		accessToken: accessToken,
 	}
-
-	var whoami model.WhoAmI
-	if err := request.JSON(&whoami); err != nil {
-		return model.WhoAmI{}, err
-	}
-
-	return whoami, nil
 }
 
 func Login(state string) string {
@@ -156,9 +145,31 @@ func Refresh(refreshToken string) (model.User, error) {
 	return user, nil
 }
 
-func Accounts(tokenType string, accessToken string) (model.Accounts, error) {
+func (m Monzo) WhoAmI() (model.WhoAmI, error) {
 	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
+	headers.FormURLEncoded()
+
+	targetURL := GetURL(WhoAmIURL)
+
+	request := httpc.HTTP{
+		TargetURL: targetURL,
+		Method:    http.MethodPut,
+		Headers:   headers,
+		Form:      nil,
+	}
+
+	var whoami model.WhoAmI
+	if err := request.JSON(&whoami); err != nil {
+		return model.WhoAmI{}, err
+	}
+
+	return whoami, nil
+}
+
+func (m Monzo) Accounts() (model.Accounts, error) {
+	headers := make(httpc.Headers)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	request := httpc.HTTP{
 		TargetURL: GetURL(AccountsURL),
@@ -175,9 +186,9 @@ func Accounts(tokenType string, accessToken string) (model.Accounts, error) {
 	return accounts, nil
 }
 
-func Balance(tokenType string, accessToken string, accountID string) (model.Balance, error) {
+func (m Monzo) Balance(accountID string) (model.Balance, error) {
 	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	targetURL := GetURL(BalanceURL, accountID)
 	request := httpc.HTTP{
@@ -195,9 +206,9 @@ func Balance(tokenType string, accessToken string, accountID string) (model.Bala
 	return balance, nil
 }
 
-func Pots(tokenType string, accessToken string) (model.Pots, error) {
+func (m Monzo) Pots() (model.Pots, error) {
 	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	request := httpc.HTTP{
 		TargetURL: GetURL(PotsURL),
@@ -215,10 +226,10 @@ func Pots(tokenType string, accessToken string) (model.Pots, error) {
 	return pots, nil
 }
 
-func RegisterWebhook(tokenType string, accessToken string, accountID string) (model.Webhook, error) {
+func (m Monzo) RegisterWebhook(accountID string) (model.Webhook, error) {
 	headers := httpc.Headers{}
 	headers.FormURLEncoded()
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	data := map[string]string{
 		"account_id": accountID,
@@ -240,9 +251,9 @@ func RegisterWebhook(tokenType string, accessToken string, accountID string) (mo
 	return webhookBody.Webhook, nil
 }
 
-func DeleteWebhook(tokenType string, accessToken string, webhookID string) error {
+func (m Monzo) DeleteWebhook(webhookID string) error {
 	headers := httpc.Headers{}
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	request := httpc.HTTP{
 		TargetURL: GetURL(WebhookDeleteURL, webhookID),
@@ -258,11 +269,11 @@ func DeleteWebhook(tokenType string, accessToken string, webhookID string) error
 	return nil
 }
 
-func Webhooks(tokenType string, accessToken string, accountID string) ([]model.Webhook, error) {
+func (m Monzo) Webhooks(accountID string) ([]model.Webhook, error) {
 	targetURL := GetURL(WebhookGetURL, accountID)
 
 	headers := httpc.Headers{}
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 
 	request := httpc.HTTP{
 		TargetURL: targetURL,
@@ -279,9 +290,9 @@ func Webhooks(tokenType string, accessToken string, accountID string) ([]model.W
 	return webhooks.Array, nil
 }
 
-func Withdraw(tokenType string, accessToken string, sourcePotID string, destinationAccountID string, amount int64) (model.Pot, error) {
+func (m Monzo) Withdraw(sourcePotID string, destinationAccountID string, amount int64) (model.Pot, error) {
 	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 	headers.FormURLEncoded()
 
 	data := make(map[string]string)
@@ -306,9 +317,9 @@ func Withdraw(tokenType string, accessToken string, sourcePotID string, destinat
 	return pot, nil
 }
 
-func Deposit(tokenType string, accessToken string, targetPotID string, sourceAccountID string, amount int64) (model.Pot, error) {
+func (m Monzo) Deposit(targetPotID string, sourceAccountID string, amount int64) (model.Pot, error) {
 	headers := make(httpc.Headers)
-	headers.Authorization(tokenType, accessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 	headers.FormURLEncoded()
 
 	data := make(map[string]string)
@@ -333,23 +344,9 @@ func Deposit(tokenType string, accessToken string, targetPotID string, sourceAcc
 	return pot, nil
 }
 
-func CreateFeedItem(accountID string, title string, body string, imageURL string) error {
-	sqlioAccount := sqlio.New(model.Account{})
-	if err := sqlioAccount.SelectWhere(sqlio.Values{"account_id": accountID}); err != nil {
-		return err
-	}
-
-	account := sqlioAccount.Get().(model.Account)
-
-	sqlioUser := sqlio.New(model.User{})
-	if err := sqlioUser.SelectWhere(sqlio.Values{"user_id": account.UserID}); err != nil {
-		return err
-	}
-
-	user := sqlioUser.Get().(model.User)
-
+func (m Monzo) CreateFeedItem(accountID string, title string, body string, imageURL string) error {
 	headers := make(httpc.Headers)
-	headers.Authorization(user.TokenType, user.AccessToken)
+	headers.Authorization(m.tokenType, m.accessToken)
 	headers.FormURLEncoded()
 
 	data := make(map[string]string)

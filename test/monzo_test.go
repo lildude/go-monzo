@@ -37,7 +37,7 @@ func TestMonzoAuthHeaderInvalid(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	_, err := monzo.Accounts("Bearer", "x-access-token")
+	_, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil && !strings.Contains(err.Error(), authHeaderInvalid) {
 		t.Log(err)
 		t.FailNow()
@@ -65,7 +65,7 @@ func TestMonzoAuthHeaderMissing(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	_, err := monzo.Accounts("Bearer", "x-access-token")
+	_, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil && !strings.Contains(err.Error(), authHeaderMissing) {
 		t.Log(err)
 		t.FailNow()
@@ -93,7 +93,7 @@ func TestMonzoAuthenticationExpired(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	_, err := monzo.Accounts("Bearer", "x-access-token")
+	_, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil && !strings.Contains(err.Error(), badAccessToken) {
 		t.Log(err)
 		t.FailNow()
@@ -265,7 +265,7 @@ func TestMonzoAccountsNew(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	testMonzoAccounts, err := monzo.Accounts("Bearer", "x-access-token")
+	testMonzoAccounts, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -319,7 +319,7 @@ func TestMonzoAccountsUpdate(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	testMonzoAccounts, err := monzo.Accounts("Bearer", "x-access-token")
+	testMonzoAccounts, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
