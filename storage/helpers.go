@@ -1,11 +1,11 @@
-package monzo
+package storage
 
 import (
-	"github.com/gurparit/go-monzo/monzo/model"
+	"github.com/gurparit/go-monzo/model"
 	"github.com/gurparit/go-common/sqlio"
 )
 
-func GetUser(userID string) (model.User, error) {
+func User(userID string) (model.User, error) {
 	sqlioUser := sqlio.New(model.User{})
 	if err := sqlioUser.SelectWhere(sqlio.Values{"user_id": userID}); err != nil {
 		return model.User{}, err
@@ -14,16 +14,7 @@ func GetUser(userID string) (model.User, error) {
 	return sqlioUser.Get().(model.User), nil
 }
 
-func GetAccountByUser(userID string) (model.Account, error) {
-	sqlioAccount := sqlio.New(model.Account{})
-	if err := sqlioAccount.SelectWhere(sqlio.Values{"user_id": userID}); err != nil {
-		return model.Account{}, err
-	}
-
-	return sqlioAccount.Get().(model.Account), nil
-}
-
-func GetAccountByID(accountID string) (model.Account, error) {
+func Account(accountID string) (model.Account, error) {
 	sqlioAccount := sqlio.New(model.Account{})
 	if err := sqlioAccount.SelectWhere(sqlio.Values{"account_id": accountID}); err != nil {
 		return model.Account{}, err
@@ -32,15 +23,13 @@ func GetAccountByID(accountID string) (model.Account, error) {
 	return sqlioAccount.Get().(model.Account), nil
 }
 
-func DeleteWebhookByID(webhookID string) error {
-	sqlioWebhook := sqlio.New(model.Webhook{})
-	if err := sqlioWebhook.SelectWhere(sqlio.Values{"webhook_id": webhookID}); err != nil {
-		return err
-	} else {
-		sqlioWebhook.Delete()
+func AccountByUser(userID string) (model.Account, error) {
+	sqlioAccount := sqlio.New(model.Account{})
+	if err := sqlioAccount.SelectWhere(sqlio.Values{"user_id": userID}); err != nil {
+		return model.Account{}, err
 	}
 
-	return nil
+	return sqlioAccount.Get().(model.Account), nil
 }
 
 func SaveOrUpdateUser(user model.User) {
@@ -66,4 +55,15 @@ func SaveOrUpdateAccount(account model.Account) {
 func SaveWebhook(webhook model.Webhook) {
 	sqlioWebhook := sqlio.New(webhook)
 	sqlioWebhook.Save()
+}
+
+func DeleteWebhook(webhookID string) error {
+	sqlioWebhook := sqlio.New(model.Webhook{})
+	if err := sqlioWebhook.SelectWhere(sqlio.Values{"webhook_id": webhookID}); err != nil {
+		return err
+	} else {
+		sqlioWebhook.Delete()
+	}
+
+	return nil
 }

@@ -11,7 +11,7 @@ import (
 
 	"strings"
 
-	"github.com/gurparit/go-monzo/monzo/model"
+	"github.com/gurparit/go-monzo/model"
 	"github.com/gurparit/go-common/httpc"
 	"github.com/gurparit/go-common/logio"
 	"github.com/gurparit/go-common/uuid"

@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/gurparit/go-monzo/monzo"
-	"github.com/gurparit/go-monzo/monzo/model"
+	"github.com/gurparit/go-monzo/model"
 )
 
 func TestMonzoAuthHeaderInvalid(t *testing.T) {
