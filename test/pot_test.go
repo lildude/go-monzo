@@ -10,15 +10,14 @@ import (
 
 	"strings"
 
-	"github.com/gurparit/go-monzo/monzo"
 	"github.com/gurparit/go-monzo/model"
+	"github.com/gurparit/go-monzo/monzo"
 )
 
 func TestPotWithdrawSuccess(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -29,20 +28,17 @@ func TestPotWithdrawSuccess(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now(),
 	}
 
 	expectedPot := model.Pot{
-		ID:        0,
-		PotID:     "pot_00009exampleP0tOxWb",
-		AccountID: expectedAccount.AccountID,
-		Name:      "Flying Lessons",
-		Balance:   350000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "pot_00009exampleP0tOxWb",
+		Name:     "Flying Lessons",
+		Balance:  350000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +47,7 @@ func TestPotWithdrawSuccess(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Destination Account ID", expectedAccount.AccountID, r.PostFormValue("destination_account_id"))
+		IsEqual(t, "Destination Account ID", expectedAccount.ID, r.PostFormValue("destination_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -69,7 +65,7 @@ func TestPotWithdrawSuccess(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	pot, err := monzo.New("Bearer", "x-access-token").Withdraw( expectedPot.PotID, expectedAccount.AccountID, 5000)
+	pot, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -77,7 +73,6 @@ func TestPotWithdrawSuccess(t *testing.T) {
 
 	IsEqual(t, "pot.id", expectedPot.ID, pot.ID)
 	IsEqual(t, "pot.name", expectedPot.Name, pot.Name)
-	IsEqual(t, "pot.account_id", expectedPot.AccountID, pot.AccountID)
 	IsEqual(t, "pot.balance", expectedPot.Balance, pot.Balance)
 	IsEqual(t, "pot.currency", expectedPot.Currency, pot.Currency)
 	IsEqual(t, "pot.deleted", expectedPot.Deleted, pot.Deleted)
@@ -87,7 +82,6 @@ func TestPotDepositSuccess(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -98,15 +92,13 @@ func TestPotDepositSuccess(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now(),
 	}
 
 	expectedPot := model.Pot{
-		ID:       0,
-		PotID:    "pot_00009exampleP0tOxWb",
+		ID:       "pot_00009exampleP0tOxWb",
 		Name:     "Flying Lessons",
 		Balance:  350000,
 		Currency: "GBP",
@@ -119,7 +111,7 @@ func TestPotDepositSuccess(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Source Account ID", expectedAccount.AccountID, r.PostFormValue("source_account_id"))
+		IsEqual(t, "Source Account ID", expectedAccount.ID, r.PostFormValue("source_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -137,7 +129,7 @@ func TestPotDepositSuccess(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	pot, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
+	pot, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -145,7 +137,6 @@ func TestPotDepositSuccess(t *testing.T) {
 
 	IsEqual(t, "pot.id", expectedPot.ID, pot.ID)
 	IsEqual(t, "pot.name", expectedPot.Name, pot.Name)
-	IsEqual(t, "pot.account_id", expectedPot.AccountID, pot.AccountID)
 	IsEqual(t, "pot.balance", expectedPot.Balance, pot.Balance)
 	IsEqual(t, "pot.currency", expectedPot.Currency, pot.Currency)
 	IsEqual(t, "pot.deleted", expectedPot.Deleted, pot.Deleted)
@@ -161,7 +152,6 @@ func TestPotWithdrawDeletedFail(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -172,20 +162,17 @@ func TestPotWithdrawDeletedFail(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now(),
 	}
 
 	expectedPot := model.Pot{
-		ID:        0,
-		PotID:     "pot_00009exampleP0tOxWb",
-		AccountID: expectedAccount.AccountID,
-		Name:      "Flying Lessons",
-		Balance:   350000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "pot_00009exampleP0tOxWb",
+		Name:     "Flying Lessons",
+		Balance:  350000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +181,7 @@ func TestPotWithdrawDeletedFail(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Destination Account ID", expectedAccount.AccountID, r.PostFormValue("destination_account_id"))
+		IsEqual(t, "Destination Account ID", expectedAccount.ID, r.PostFormValue("destination_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -206,7 +193,7 @@ func TestPotWithdrawDeletedFail(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot access deleted pots") {
 		t.Fail()
 	}
@@ -222,7 +209,6 @@ func TestPotDepositDeletedFail(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -233,20 +219,17 @@ func TestPotDepositDeletedFail(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now(),
 	}
 
 	expectedPot := model.Pot{
-		ID:        0,
-		PotID:     "pot_00009exampleP0tOxWb",
-		Name:      "Flying Lessons",
-		AccountID: expectedAccount.AccountID,
-		Balance:   350000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "pot_00009exampleP0tOxWb",
+		Name:     "Flying Lessons",
+		Balance:  350000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -255,7 +238,7 @@ func TestPotDepositDeletedFail(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Source Account ID", expectedAccount.AccountID, r.PostFormValue("source_account_id"))
+		IsEqual(t, "Source Account ID", expectedAccount.ID, r.PostFormValue("source_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -267,7 +250,7 @@ func TestPotDepositDeletedFail(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot access deleted pots") {
 		t.Fail()
 	}
@@ -283,7 +266,6 @@ func TestPotWithdrawInsufficientFundsFail(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -294,20 +276,16 @@ func TestPotWithdrawInsufficientFundsFail(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
 	}
 
 	expectedPot := model.Pot{
-		ID:        0,
-		PotID:     "pot_00009exampleP0tOxWb",
-		Name:      "Flying Lessons",
-		AccountID: expectedAccount.AccountID,
-		Balance:   350000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "pot_00009exampleP0tOxWb",
+		Name:     "Flying Lessons",
+		Balance:  350000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -316,7 +294,7 @@ func TestPotWithdrawInsufficientFundsFail(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Destination Account ID", expectedAccount.AccountID, r.PostFormValue("destination_account_id"))
+		IsEqual(t, "Destination Account ID", expectedAccount.ID, r.PostFormValue("destination_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -328,7 +306,7 @@ func TestPotWithdrawInsufficientFundsFail(t *testing.T) {
 
 	monzo.SetURL(monzo.WithdrawURL, testHttp.URL)
 
-	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Withdraw(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "cannot withdraw amount, not enough money in pot") {
 		t.Fail()
 	}
@@ -344,7 +322,6 @@ func TestPotDepositInsufficientFundsFail(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -355,20 +332,17 @@ func TestPotDepositInsufficientFundsFail(t *testing.T) {
 	}
 
 	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now(),
 	}
 
 	expectedPot := model.Pot{
-		ID:        0,
-		PotID:     "pot_00009exampleP0tOxWb",
-		Name:      "Flying Lessons",
-		AccountID: expectedAccount.AccountID,
-		Balance:   350000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "pot_00009exampleP0tOxWb",
+		Name:     "Flying Lessons",
+		Balance:  350000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -377,7 +351,7 @@ func TestPotDepositInsufficientFundsFail(t *testing.T) {
 
 		IsEqual(t, "Method", http.MethodPut, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
-		IsEqual(t, "Source Account ID", expectedAccount.AccountID, r.PostFormValue("source_account_id"))
+		IsEqual(t, "Source Account ID", expectedAccount.ID, r.PostFormValue("source_account_id"))
 		IsEqual(t, "Amount", "5000", r.PostFormValue("amount"))
 		IsEqual(t, "Dedupe ID", true, r.PostFormValue("dedupe_id") != "")
 
@@ -389,7 +363,7 @@ func TestPotDepositInsufficientFundsFail(t *testing.T) {
 
 	monzo.SetURL(monzo.DepositURL, testHttp.URL)
 
-	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.PotID, expectedAccount.AccountID, 5000)
+	_, err := monzo.New("Bearer", "x-access-token").Deposit(expectedPot.ID, expectedAccount.ID, 5000)
 	if err != nil && !strings.Contains(err.Error(), "{\"code\":\"bad_request.insufficient_funds\",\"message\":\"You can't deposit more than your current account balance\"}\n") {
 		t.Fail()
 	}

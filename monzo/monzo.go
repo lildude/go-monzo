@@ -11,10 +11,10 @@ import (
 
 	"strings"
 
-	"github.com/gurparit/go-monzo/model"
 	"github.com/gurparit/go-common/httpc"
 	"github.com/gurparit/go-common/logio"
 	"github.com/gurparit/go-common/uuid"
+	"github.com/gurparit/go-monzo/model"
 	"github.com/pkg/errors"
 )
 
@@ -61,7 +61,7 @@ var urlMap = map[string]string{
 }
 
 type Monzo struct {
-	tokenType string
+	tokenType   string
 	accessToken string
 }
 
@@ -80,7 +80,7 @@ func SetURL(urlname string, newURL string) {
 
 func New(tokenType string, accessToken string) Monzo {
 	return Monzo{
-		tokenType: tokenType,
+		tokenType:   tokenType,
 		accessToken: accessToken,
 	}
 }
@@ -168,7 +168,7 @@ func (m Monzo) WhoAmI() (model.WhoAmI, error) {
 	return whoami, nil
 }
 
-func (m Monzo) Accounts() (model.Accounts, error) {
+func (m Monzo) Accounts() (model.Monzo, error) {
 	headers := make(httpc.Headers)
 	headers.Authorization(m.tokenType, m.accessToken)
 
@@ -179,12 +179,12 @@ func (m Monzo) Accounts() (model.Accounts, error) {
 		Form:      nil,
 	}
 
-	var accounts model.Accounts
-	if err := request.JSON(&accounts); err != nil {
-		return model.Accounts{}, err
+	var monzo model.Monzo
+	if err := request.JSON(&monzo); err != nil {
+		return model.Monzo{}, err
 	}
 
-	return accounts, nil
+	return monzo, nil
 }
 
 func (m Monzo) CurrentAccount() (model.Account, error) {
@@ -198,16 +198,16 @@ func (m Monzo) CurrentAccount() (model.Account, error) {
 		Form:      nil,
 	}
 
-	var accounts model.Accounts
-	if err := request.JSON(&accounts); err != nil {
+	var monzo model.Monzo
+	if err := request.JSON(&monzo); err != nil {
 		return model.Account{}, err
 	}
 
-	if len(accounts.Array) == 0 {
+	if len(monzo.Accounts) == 0 {
 		return model.Account{}, errors.New("no accounts found for your account")
 	}
 
-	return accounts.Array[0], nil
+	return monzo.Accounts[0], nil
 }
 
 func (m Monzo) Balance(accountID string) (model.Balance, error) {
@@ -230,7 +230,7 @@ func (m Monzo) Balance(accountID string) (model.Balance, error) {
 	return balance, nil
 }
 
-func (m Monzo) Pots() (model.Pots, error) {
+func (m Monzo) Pots() (model.Monzo, error) {
 	headers := make(httpc.Headers)
 	headers.Authorization(m.tokenType, m.accessToken)
 
@@ -241,13 +241,12 @@ func (m Monzo) Pots() (model.Pots, error) {
 		Form:      nil,
 	}
 
-	var pots model.Pots
-
-	if err := request.JSON(&pots); err != nil {
-		return model.Pots{}, err
+	var monzo model.Monzo
+	if err := request.JSON(&monzo); err != nil {
+		return model.Monzo{}, err
 	}
 
-	return pots, nil
+	return monzo, nil
 }
 
 func (m Monzo) RegisterWebhook(accountID string) (model.Webhook, error) {
@@ -267,12 +266,12 @@ func (m Monzo) RegisterWebhook(accountID string) (model.Webhook, error) {
 		Form:      data,
 	}
 
-	webhookBody := model.WebhookBody{}
-	if err := request.JSON(&webhookBody); err != nil {
+	var monzo model.Monzo
+	if err := request.JSON(&monzo); err != nil {
 		return model.Webhook{}, err
 	}
 
-	return webhookBody.Webhook, nil
+	return monzo.Webhook, nil
 }
 
 func (m Monzo) DeleteWebhook(webhookID string) error {
@@ -305,13 +304,13 @@ func (m Monzo) Webhooks(accountID string) ([]model.Webhook, error) {
 		Form:      nil,
 	}
 
-	var webhooks model.Webhooks
-	if err := request.JSON(&webhooks); err != nil {
+	var monzo model.Monzo
+	if err := request.JSON(&monzo); err != nil {
 		logio.Println(err)
 		return nil, err
 	}
 
-	return webhooks.Array, nil
+	return monzo.Webhooks, nil
 }
 
 func (m Monzo) Withdraw(sourcePotID string, destinationAccountID string, amount int64) (model.Pot, error) {

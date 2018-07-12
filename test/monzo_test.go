@@ -12,8 +12,8 @@ import (
 
 	"strings"
 
-	"github.com/gurparit/go-monzo/monzo"
 	"github.com/gurparit/go-monzo/model"
+	"github.com/gurparit/go-monzo/monzo"
 )
 
 func TestMonzoAuthHeaderInvalid(t *testing.T) {
@@ -103,7 +103,6 @@ func TestMonzoAuthenticationExpired(t *testing.T) {
 func TestMonzoCallback(t *testing.T) {
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedNewUser := model.User{
-		ID:           2,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "new-x-access-token",
@@ -163,7 +162,6 @@ func TestMonzoRefresh(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -175,7 +173,6 @@ func TestMonzoRefresh(t *testing.T) {
 
 	// Expected New User
 	expectedNewUser := model.User{
-		ID:           expectedUser.ID,
 		UserID:       expectedUser.UserID,
 		ClientID:     expectedUser.ClientID,
 		AccessToken:  "new-x-access-token",
@@ -233,9 +230,10 @@ func TestMonzoRefresh(t *testing.T) {
 
 func TestMonzoAccountsNew(t *testing.T) {
 	// Expected Account
-	expectedAccount := model.Account{
-		AccountID:   "x-account-id",
+	expected := model.Account{
+		ID:          "x-account-id",
 		Description: "My Current Account",
+		Created:     time.Now().Round(time.Millisecond),
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -245,9 +243,9 @@ func TestMonzoAccountsNew(t *testing.T) {
 
 		data := map[string]interface{}{
 			"accounts": []map[string]interface{}{{
-				"id":          expectedAccount.AccountID,
-				"description": expectedAccount.Description,
-				"created":     "2018-01-01T12:12:21Z",
+				"id":          expected.ID,
+				"description": expected.Description,
+				"created":     expected.Created,
 			}},
 		}
 
@@ -265,31 +263,24 @@ func TestMonzoAccountsNew(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	testMonzoAccounts, err := monzo.New("Bearer", "x-access-token").Accounts()
+	testMonzo, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
 
-	IsEqual(t, "count(accounts)", 1, len(testMonzoAccounts.Array))
+	IsEqual(t, "count(accounts)", 1, len(testMonzo.Accounts))
 
-	testAccount := testMonzoAccounts.Array[0]
-	IsEqual(t, "account", expectedAccount, testAccount)
+	testAccount := testMonzo.Accounts[0]
+	IsEqual(t, "account", expected, testAccount)
 }
 
 func TestMonzoAccountsUpdate(t *testing.T) {
-	// Expected Account
-	expectedAccount := model.Account{
-		AccountID:   "x-account-id",
-		Description: "My Current Account",
-	}
-
 	// Expected New Account
-	expectedNewAccount := model.Account{
-		ID:          expectedAccount.ID,
-		UserID:      expectedAccount.UserID,
-		AccountID:   "new-x-account-id",
+	expected := model.Account{
+		ID:          "new-x-account-id",
 		Description: "My New Current Account",
+		Created:     time.Now().Round(time.Millisecond),
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -299,9 +290,9 @@ func TestMonzoAccountsUpdate(t *testing.T) {
 
 		data := map[string]interface{}{
 			"accounts": []map[string]interface{}{{
-				"id":          expectedNewAccount.AccountID,
-				"description": expectedNewAccount.Description,
-				"created":     "2018-01-01T12:12:21Z",
+				"id":          expected.ID,
+				"description": expected.Description,
+				"created":     expected.Created,
 			}},
 		}
 
@@ -319,16 +310,16 @@ func TestMonzoAccountsUpdate(t *testing.T) {
 
 	monzo.SetURL(monzo.AccountsURL, testHttp.URL)
 
-	testMonzoAccounts, err := monzo.New("Bearer", "x-access-token").Accounts()
+	testMonzo, err := monzo.New("Bearer", "x-access-token").Accounts()
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
 
-	IsEqual(t, "count(accounts)", 1, len(testMonzoAccounts.Array))
+	IsEqual(t, "count(accounts)", 1, len(testMonzo.Accounts))
 
-	testAccount := testMonzoAccounts.Array[0]
-	IsEqual(t, "account", expectedNewAccount, testAccount)
+	testAccount := testMonzo.Accounts[0]
+	IsEqual(t, "account", expected, testAccount)
 }
 
 func IsEqual(t *testing.T, key string, expected interface{}, actual interface{}) {

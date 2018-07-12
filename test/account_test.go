@@ -10,15 +10,14 @@ import (
 
 	"fmt"
 
-	"github.com/gurparit/go-monzo/monzo"
 	"github.com/gurparit/go-monzo/model"
+	"github.com/gurparit/go-monzo/monzo"
 )
 
 func TestAccountBalanceNew(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -75,7 +74,6 @@ func TestAccountBalanceUpdate(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -132,7 +130,6 @@ func TestAccountPots(t *testing.T) {
 	// Expected User
 	timeNow := time.Now().Add(time.Second * 21600)
 	expectedUser := model.User{
-		ID:           1,
 		UserID:       "x-user-id",
 		ClientID:     "x-client-id",
 		AccessToken:  "x-access-token",
@@ -142,31 +139,20 @@ func TestAccountPots(t *testing.T) {
 		ExpiresIn:    21600,
 	}
 
-	expectedAccount := model.Account{
-		ID:          1,
-		UserID:      expectedUser.UserID,
-		AccountID:   "x-account-id",
-		Description: "My Current Account",
-	}
-
 	expectedActivePot := model.Pot{
-		ID:        0,
-		PotID:     "x-active-pot-id",
-		Name:      "x-active-pot-name",
-		AccountID: expectedAccount.AccountID,
-		Balance:   4000,
-		Currency:  "GBP",
-		Deleted:   false,
+		ID:       "x-active-pot-id",
+		Name:     "x-active-pot-name",
+		Balance:  4000,
+		Currency: "GBP",
+		Deleted:  false,
 	}
 
 	expectedDeletedPot := model.Pot{
-		ID:        0,
-		PotID:     "x-deleted-pot-id",
-		Name:      "x-deleted-pot-name",
-		AccountID: expectedAccount.AccountID,
-		Balance:   4000,
-		Currency:  "GBP",
-		Deleted:   true,
+		ID:       "x-deleted-pot-id",
+		Name:     "x-deleted-pot-name",
+		Balance:  4000,
+		Currency: "GBP",
+		Deleted:  true,
 	}
 
 	testHttp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -176,8 +162,8 @@ func TestAccountPots(t *testing.T) {
 		IsEqual(t, "Method", http.MethodGet, r.Method)
 		IsEqual(t, "Authorization", authHeader, r.Header.Get("Authorization"))
 
-		data := model.Pots{
-			Array: []model.Pot{
+		data := model.Monzo{
+			Pots: []model.Pot{
 				expectedActivePot,
 				expectedDeletedPot,
 			},
@@ -197,21 +183,20 @@ func TestAccountPots(t *testing.T) {
 
 	monzo.SetURL(monzo.PotsURL, testHttp.URL)
 
-	pots, err := monzo.New("Bearer", "x-access-token").Pots()
+	testMonzo, err := monzo.New("Bearer", "x-access-token").Pots()
 
 	IsEqual(t, "error", nil, err)
 
-	actualActivePot := pots.Array[0]
-	actualDeletedPot := pots.Array[1]
+	actualActivePot := testMonzo.Pots[0]
+	actualDeletedPot := testMonzo.Pots[1]
 
-	IsEqual(t, "len(pots)", 2, len(pots.Array))
+	IsEqual(t, "len(pots)", 2, len(testMonzo.Pots))
 
 	// Active Pot
 	IsEqual(t, "active pot.id", expectedActivePot.ID, actualActivePot.ID)
 	IsEqual(t, "active pot.name", expectedActivePot.Name, actualActivePot.Name)
 	IsEqual(t, "active pot.balance", expectedActivePot.Balance, actualActivePot.Balance)
 	IsEqual(t, "active pot.currency", expectedActivePot.Currency, actualActivePot.Currency)
-	IsEqual(t, "active pot.account_id", expectedActivePot.AccountID, actualActivePot.AccountID)
 	IsEqual(t, "active pot.deleted", expectedActivePot.Deleted, actualActivePot.Deleted)
 
 	// Deleted Pot
@@ -219,6 +204,5 @@ func TestAccountPots(t *testing.T) {
 	IsEqual(t, "deleted pot.name", expectedDeletedPot.Name, actualDeletedPot.Name)
 	IsEqual(t, "deleted pot.balance", expectedDeletedPot.Balance, actualDeletedPot.Balance)
 	IsEqual(t, "deleted pot.currency", expectedDeletedPot.Currency, actualDeletedPot.Currency)
-	IsEqual(t, "deleted pot.account_id", expectedDeletedPot.AccountID, actualDeletedPot.AccountID)
 	IsEqual(t, "deleted pot.deleted", expectedDeletedPot.Deleted, actualDeletedPot.Deleted)
 }
