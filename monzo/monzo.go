@@ -186,6 +186,25 @@ func (m Monzo) Accounts() (model.Accounts, error) {
 	return accounts, nil
 }
 
+func (m Monzo) CurrentAccount() (model.Account, error) {
+	headers := make(httpc.Headers)
+	headers.Authorization(m.tokenType, m.accessToken)
+
+	request := httpc.HTTP{
+		TargetURL: GetURL(AccountsURL),
+		Method:    http.MethodGet,
+		Headers:   headers,
+		Form:      nil,
+	}
+
+	var accounts model.Accounts
+	if err := request.JSON(&accounts); err != nil {
+		return model.Account{}, err
+	}
+
+	return accounts.Array[0], nil
+}
+
 func (m Monzo) Balance(accountID string) (model.Balance, error) {
 	headers := make(httpc.Headers)
 	headers.Authorization(m.tokenType, m.accessToken)
