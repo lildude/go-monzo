@@ -15,6 +15,7 @@ import (
 	"github.com/gurparit/go-common/httpc"
 	"github.com/gurparit/go-common/logio"
 	"github.com/gurparit/go-common/uuid"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -200,6 +201,10 @@ func (m Monzo) CurrentAccount() (model.Account, error) {
 	var accounts model.Accounts
 	if err := request.JSON(&accounts); err != nil {
 		return model.Account{}, err
+	}
+
+	if len(accounts.Array) == 0 {
+		return model.Account{}, errors.New("no accounts found for your account")
 	}
 
 	return accounts.Array[0], nil
