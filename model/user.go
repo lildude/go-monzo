@@ -9,7 +9,7 @@ type User struct {
 	ClientID     string    `json:"client_id"`
 	AccessToken  string    `json:"access_token"`
 	RefreshToken string    `json:"refresh_token"`
-	ExpiresIn    int       `json:"expires_in"`
+	ExpiresIn    int64     `json:"expires_in"`
 	ExpiryDate   time.Time `json:"expiry_date"`
 	TokenType    string    `json:"token_type"`
 }
