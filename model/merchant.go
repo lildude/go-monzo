@@ -1,7 +1,7 @@
 package model
 
 type Merchant struct {
-	ID         int64  `json:"id"`
+	ID         string `json:"id"`
 	GroupID    string `json:"group_id"`
 	MerchantID string `json:"merchant_id"`
 	Name       string `json:"name"`

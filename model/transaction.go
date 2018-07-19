@@ -12,6 +12,7 @@ type Transaction struct {
 		Amount        int64     `json:"amount"`
 		Currency      string    `json:"currency"`
 		Created       time.Time `json:"created"`
+		Settled       string    `json:"settled"`
 		IsLoad        bool      `json:"is_load"`
 		Merchant      Merchant  `json:"merchant"`
 	} `json:"data"`
