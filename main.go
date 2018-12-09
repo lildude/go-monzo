@@ -1,5 +1,13 @@
 package main
 
+import (
+	"fmt"
+
+	"github.com/gurparit/go-monzo/monzo"
+)
+
 func main() {
-	println("Hello, Monzo")
+	m := monzo.Monzo{}
+
+	fmt.Printf("%+v\n", m)
 }
